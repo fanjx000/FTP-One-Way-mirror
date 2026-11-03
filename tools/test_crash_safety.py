@@ -16,6 +16,7 @@ from __future__ import annotations
 import gc
 import json
 import os
+import pathlib
 import sys
 import tempfile
 import time
@@ -147,8 +148,13 @@ def main() -> int:
     log = safety.log_path()
     check(os.path.exists(log), f"日志文件存在：{log}")
     check(len(safety.recent()) > 0, "能读回日志内容")
-    check("session start" in safety.recent() or "unhandled" in safety.recent(),
-          "日志包含会话/异常标记")
+    # recent() returns the *tail* (12 000 chars by default).  Qt adds a font
+    # warning in offscreen mode, which alone can push the marker out of that
+    # window - so read the whole file here instead of guessing a size.
+    whole = pathlib.Path(log).read_text(encoding="utf-8", errors="replace")
+    check("session start" in whole, "日志包含会话标记")
+    check("unhandled" in whole or "slot " in whole, "日志记录了异常/槽失败")
+    check(len(safety.recent()) > 0, "recent() 能读回尾部")
 
     for w in list(win.findChildren(QLabel)):
         pass
