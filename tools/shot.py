@@ -18,7 +18,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-DATA = Path(tempfile.mkdtemp(prefix="ftpsync_ui_"))
+# Screenshots end up in a public repository, so the demo tree lives at a neutral
+# path: no user name, no random temp suffix.  %PUBLIC% is writable without admin.
+DATA = Path(os.environ.get("PUBLIC") or r"C://Users//Public") / "FtpSync Demo"
+if DATA.exists():
+    shutil.rmtree(DATA, ignore_errors=True)
+DATA.mkdir(parents=True, exist_ok=True)
 os.environ["APPDATA"] = str(DATA)          # keep the real user profile clean
 
 from pyftpdlib.authorizers import DummyAuthorizer          # noqa: E402
@@ -93,6 +98,43 @@ def pump(app, seconds: float, until=None) -> None:
         if until is not None and until():
             break
         time.sleep(0.02)
+
+
+def private_strings() -> list:
+    """Anything that would leak the person who took the screenshot."""
+    cands = [os.environ.get("USERNAME", ""), os.environ.get("USERPROFILE", ""),
+             os.environ.get("USERDOMAIN", ""), tempfile.gettempdir()]
+    return [c for c in cands if c and len(c) > 3]
+
+
+def assert_no_private_paths(win) -> list:
+    """Collect visible text that still contains a local path / user name."""
+    from PySide6.QtWidgets import (QAbstractButton, QComboBox, QLabel, QLineEdit,
+                                   QTextEdit, QPlainTextEdit, QAbstractItemView)
+
+    leaks, needles = [], private_strings()
+    widgets = [win] + win.findChildren(object)
+    for w in widgets:
+        texts = []
+        for attr in ("text", "placeholderText", "currentText", "toolTip", "windowTitle"):
+            getter = getattr(w, attr, None)
+            if callable(getter):
+                try:
+                    texts.append(getter())
+                except Exception:
+                    pass
+        for t in texts:
+            if isinstance(t, str) and any(n.lower() in t.lower() for n in needles):
+                leaks.append(f"{type(w).__name__}: {t[:110]}")
+
+    model = getattr(win, "model", None)
+    if model is not None:
+        for r in range(model.rowCount()):
+            for c in range(len(__import__("app.ui.table", fromlist=["COLUMNS"]).COLUMNS)):
+                v = model.data(model.index(r, c), 0)
+                if isinstance(v, str) and any(n.lower() in v.lower() for n in needles):
+                    leaks.append(f"table r{r}c{c}: {v[:110]}")
+    return leaks
 
 
 def main() -> int:
@@ -207,6 +249,36 @@ def main() -> int:
     shot_about("en", "screenshot-about-en.png")
     set_language("zh")
 
+    # refuse to publish screenshots that still show the local user name / paths
+    leaks = assert_no_private_paths(win)
+    for extra in ("screenshot-log.png",):
+        pass
+    log_text = win.txt_log.toPlainText()
+    for needle in private_strings():
+        if needle.lower() in log_text.lower():
+            leaks.append(f"run log: contains {needle!r}")
+    if leaks:
+        print("PRIVATE DATA WOULD LEAK INTO THE SCREENSHOTS:")
+        for item in leaks[:20]:
+            print("   ", item)
+        return 1
+    print("privacy check: no local user name or path in the captured UI ✔")
+
+    # refuse to publish screenshots that still show the local user name / paths
+    leaks = assert_no_private_paths(win)
+    for extra in ("screenshot-log.png",):
+        pass
+    log_text = win.txt_log.toPlainText()
+    for needle in private_strings():
+        if needle.lower() in log_text.lower():
+            leaks.append(f"run log: contains {needle!r}")
+    if leaks:
+        print("PRIVATE DATA WOULD LEAK INTO THE SCREENSHOTS:")
+        for item in leaks[:20]:
+            print("   ", item)
+        return 1
+    print("privacy check: no local user name or path in the captured UI ✔")
+
     print("---- LOG ----")
     print(win.txt_log.toPlainText()[-4000:])
     print("remote tree:")
@@ -215,6 +287,8 @@ def main() -> int:
 
     win.close()
     srv.close_all()
+    shutil.rmtree(DATA, ignore_errors=True)     # leave no demo files behind
+    shutil.rmtree(DATA, ignore_errors=True)     # leave no demo files behind
     shutil.rmtree(DATA, ignore_errors=True)
     return 0
 

@@ -20,7 +20,7 @@ What makes it different from a plain `rsync`/script job:
 
 ## 1. How to run
 
-**Download** `FtpSync.exe` from the [Releases](../../releases) page (single file, ~28 MB), or
+**Download** `FtpSync.exe` from the [Releases](https://github.com/fanjx000/FTP-One-Way-mirror/releases) page (single file, ~28 MB), or
 build it yourself with `build.bat` (see [§9](#9-run-from-source--build-it-yourself)).
 
 ```
