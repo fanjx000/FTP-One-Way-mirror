@@ -1,0 +1,3 @@
+# Runtime dependency of the application itself.
+# The single-file exe bundles these; you only need them to run from source.
+PySide6-Essentials>=6.7,<7

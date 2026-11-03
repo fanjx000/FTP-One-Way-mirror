@@ -348,9 +348,10 @@ opened an exe from an old folder.
 ## 9. Run from source / build it yourself
 
 ```bat
-pip install PySide6-Essentials pyinstaller
-python run.py            :: run the sources directly
-build.bat                :: build the single-file dist\FtpSync.exe
+pip install -r requirements.txt        :: PySide6 only, enough to run the app
+pip install -r requirements-dev.txt    :: ...plus test harness and PyInstaller
+python run.py                          :: run the sources directly
+build.bat                              :: build the single-file dist\FtpSync.exe
 ```
 
 `build.bat` uses `FtpSync-onefile.spec`, which packs the runtime, Qt and the application into one
@@ -361,7 +362,6 @@ Automated tests start a local FTP server and cover first sync, zero-transfer rep
 modify/add/delete, timestamps, the bulk-delete guard, single-file jobs and broken source paths:
 
 ```bat
-pip install pyftpdlib pyopenssl
 python tools\test_sync.py           :: 9 core scenarios
 python tools\test_505.py            :: concurrency-limited / rejected folder name (505)
 python tools\test_mkdir_modes.py    :: three folder-creation dialects (absolute / relative / exists)

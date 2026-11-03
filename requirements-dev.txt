@@ -1,0 +1,12 @@
+# Everything needed for the test suites and for building the exe.
+-r requirements.txt
+
+# build
+pyinstaller>=6.6
+
+# test harness: a real FTP server, and TLS for the FTPS variant
+pyftpdlib>=1.5.9
+pyopenssl>=24.0
+
+# tools/commit.py reads/writes nothing extra; pyyaml is only for workflow checks
+pyyaml>=6.0
