@@ -4,7 +4,7 @@ setlocal
 cd /d "%~dp0"
 
 echo [1/3] installing build dependencies (PySide6, PyInstaller) if needed ...
-python -m pip install --quiet --upgrade PySide6-Essentials pyinstaller || goto :err
+python -m pip install --quiet --upgrade -r requirements-dev.txt || goto :err
 
 echo [2/3] generating icon ...
 python tools\make_icon.py || goto :err
