@@ -1,0 +1,38 @@
+# ---- build output (produced by build.bat / PyInstaller) -------------------
+build/
+build_*/
+dist/
+dist_*/
+*.spec.bak
+
+# ---- runtime data -------------------------------------------------------
+data/
+*.db
+*.db-wal
+*.db-shm
+crash.log
+crash.log.1
+about.txt
+config.json.bak
+portable.txt
+
+# ---- python -------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- editors / OS -------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- local assistant / session data ------------------------------------
+.workbuddy-ai/

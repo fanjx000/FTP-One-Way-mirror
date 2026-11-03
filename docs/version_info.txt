@@ -1,0 +1,28 @@
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 8, 2, 0),
+    prodvers=(1, 8, 2, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          '080404B0',
+          [StringStruct('CompanyName', 'Justin Fan J.X.'),
+           StringStruct('FileDescription', 'FTP One-Way Sync (Windows -> FTP)'),
+           StringStruct('FileVersion', '1.8.2.0'),
+           StringStruct('InternalName', 'FtpSync'),
+           StringStruct('LegalCopyright', 'Copyright (C) 2026 Justin Fan J.X.'),
+           StringStruct('OriginalFilename', 'FtpSync.exe'),
+           StringStruct('ProductName', 'FTP One-Way Sync'),
+           StringStruct('ProductVersion', '1.8.2.0')])
+      ]),
+    VarFileInfo([VarStruct('Translation', [2052, 1200])])
+  ]
+)

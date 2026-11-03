@@ -1,0 +1,17 @@
+# Normalise line endings so the .bat files survive a round trip through git.
+* text=auto eol=lf
+
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+*.py    text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.spec  text eol=lf
+*.txt   text eol=lf
+
+*.exe   binary
+*.ico   binary
+*.png   binary
+*.jpg   binary
+*.zip   binary
