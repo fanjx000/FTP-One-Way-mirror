@@ -115,11 +115,14 @@ def main(argv: list) -> int:
     if os.environ.get("GITHUB_ACTIONS"):
         for name in failed:
             _, _, output = results[name]
-            bad = [l.strip() for l in clean(output.splitlines(), 40)
-                   if l.lstrip().startswith("[FAIL]")
-                   or "Traceback" in l or "Error" in l]
-            detail = bad[0] if bad else (clean(output.splitlines(), 1) or ["no output"])[-1]
-            print(f"::error title={name} failed::{detail[:300]}")
+            lines_out = [l.rstrip() for l in clean(output.splitlines(), 60)]
+            fails = [l for l in lines_out if l.lstrip().startswith("[FAIL]")]
+            if fails:
+                detail = fails[0]
+            else:
+                detail = " / ".join(l.strip() for l in lines_out[-3:] if l.strip())
+            detail = detail.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+            print(f"::error title={name} failed::{detail[:900]}", flush=True)
 
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
