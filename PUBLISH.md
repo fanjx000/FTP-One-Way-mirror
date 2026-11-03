@@ -73,6 +73,10 @@ git config --global --add safe.directory 'R:/RouterStorage/ftpSnyc'
 * `publish.bat` never force-pushes and never rewrites history; it only sets `origin` and pushes
   `main`.
 
+* commit messages are made with `python tools/commit.py "subject"` — on this SMB share
+  `git commit -m` leaves the tail of the previous message in `.git/COMMIT_EDITMSG`, so
+  subjects end up containing fragments of older commits.
+
 ## What is intentionally not committed
 
 | Path | Why |
