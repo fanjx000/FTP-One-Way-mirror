@@ -50,7 +50,11 @@ def clean(lines: list, limit: int) -> list:
 def run_one(script: str, env: dict, timeout: int = 900) -> tuple:
     started = time.monotonic()
     try:
-        proc = subprocess.run([sys.executable, "-u", str(TOOLS / script)],
+        # -X utf8: on an English Windows runner the console is cp1252 and the
+        # default encoding for open() follows the locale, so printing Chinese or
+        # writing a Chinese-named file raises UnicodeEncodeError.  UTF-8 mode
+        # fixes both without touching the suites.
+        proc = subprocess.run([sys.executable, "-X", "utf8", "-u", str(TOOLS / script)],
                              cwd=str(ROOT), capture_output=True, text=True,
                              encoding="utf-8", errors="replace",
                              env=env, timeout=timeout)
@@ -83,6 +87,7 @@ def main(argv: list) -> int:
     env = dict(os.environ)
     env.setdefault("QT_QPA_PLATFORM", "offscreen")
     env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
 
     results = {}
     for name, (script, _gui) in chosen.items():
@@ -120,7 +125,7 @@ def main(argv: list) -> int:
             if fails:
                 detail = fails[0]
             else:
-                detail = " / ".join(l.strip() for l in lines_out[-3:] if l.strip())
+                detail = " / ".join(l.strip() for l in lines_out[-6:] if l.strip())
             detail = detail.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
             print(f"::error title={name} failed::{detail[:900]}", flush=True)
 
