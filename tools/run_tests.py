@@ -86,13 +86,18 @@ def main(argv: list) -> int:
 
     results = {}
     for name, (script, _gui) in chosen.items():
-        print(f"\n=== {name} ({script}) ".ljust(78, "="), flush=True)
+        if os.environ.get("GITHUB_ACTIONS"):
+            print(f"::group::{name} ({script})", flush=True)
+        else:
+            print(f"\n=== {name} ({script}) ".ljust(78, "="), flush=True)
         code, output, seconds = run_one(script, env)
         ok = code == 0
         results[name] = (ok, seconds, output)
         print(output.rstrip(), flush=True)
         print(f"--- {name}: {'PASS' if ok else f'FAIL (exit {code})'} "
               f"in {seconds:.1f}s", flush=True)
+        if os.environ.get("GITHUB_ACTIONS"):
+            print("::endgroup::", flush=True)
 
     failed = [n for n, (ok, _, _) in results.items() if not ok]
 
@@ -104,6 +109,17 @@ def main(argv: list) -> int:
         print(f"{name:<16}{'PASS' if ok else 'FAIL':<10}{seconds:>7.1f}s")
     print("=" * 78)
     print(f"{len(results) - len(failed)}/{len(results)} suites passed")
+
+    # Workflow annotations: these show up in the run page's "Annotations" box, so a
+    # failure is readable without opening the raw log.
+    if os.environ.get("GITHUB_ACTIONS"):
+        for name in failed:
+            _, _, output = results[name]
+            bad = [l.strip() for l in clean(output.splitlines(), 40)
+                   if l.lstrip().startswith("[FAIL]")
+                   or "Traceback" in l or "Error" in l]
+            detail = bad[0] if bad else (clean(output.splitlines(), 1) or ["no output"])[-1]
+            print(f"::error title={name} failed::{detail[:300]}")
 
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
