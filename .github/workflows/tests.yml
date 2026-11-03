@@ -12,8 +12,8 @@ jobs:
     name: Unit and UI tests
     runs-on: windows-latest
     env:
-      # Qt cannot open a real window on a runner; the offscreen plugin lets the
-      # widget tests run unchanged.
+      # a runner has no interactive desktop; the offscreen plugin lets the
+      # widget tests run exactly as they do on a normal machine
       QT_QPA_PLATFORM: offscreen
       PYTHONIOENCODING: utf-8
     steps:
@@ -27,28 +27,10 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements-dev.txt
 
-      - name: Server / sync behaviour (no Qt)
-        shell: bash
-        run: |
-          fail=0
-          for t in test_sync test_505 test_quirky_server test_variants \
-                   test_mkdir_modes test_diagnose; do
-            echo "::group::$t"
-            python -u tools/$t.py || fail=1
-            echo "::endgroup::"
-          done
-          exit $fail
-
-      - name: User interface (offscreen Qt)
-        shell: bash
-        run: |
-          fail=0
-          for t in test_about test_crash_safety test_ui_response test_i18n ui_audit; do
-            echo "::group::$t"
-            python -u tools/$t.py || fail=1
-            echo "::endgroup::"
-          done
-          exit $fail
+      # one runner prints a table, keeps going after a failing suite, and writes
+      # the failing output into the run summary so no log download is needed
+      - name: Run all suites
+        run: python -u tools/run_tests.py
 
   build:
     name: Build FtpSync.exe
@@ -69,6 +51,9 @@ jobs:
         run: python -m PyInstaller --noconfirm FtpSync-onefile.spec
 
       - name: Smoke test the exe
+        env:
+          QT_QPA_PLATFORM: offscreen
+          PYTHONIOENCODING: utf-8
         run: |
           python -u tools/test_exe.py dist\FtpSync.exe
           python -u tools/test_exe_quirky.py dist\FtpSync.exe
@@ -78,4 +63,3 @@ jobs:
           name: FtpSync-windows-x64
           path: dist/FtpSync.exe
           if-no-files-found: error
-
